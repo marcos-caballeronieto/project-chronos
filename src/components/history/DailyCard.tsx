@@ -11,7 +11,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
             src={event.imageUrl}
             alt={event.title}
             fill
-            className="object-cover"
+            className="object-cover grayscale transition-all duration-500 ease-in-out group-hover:grayscale-0"
             style={{ objectPosition: event.imagePosition || "center" }}
             priority
           />
