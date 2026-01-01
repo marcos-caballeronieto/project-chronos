@@ -34,14 +34,14 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
             <Lightbulb size={18} /> ¿Sabías que...?
           </span>
           {event.funFact}
-        </div>
+      </div>
         <div className="prose prose-stone dark:prose-invert prose-lg max-w-none text-stone-700 dark:text-stone-300">
           {event.story.split('\n').map((p, i) => (
-            <p
-              key={i}
+            <p 
+              key={i} 
               className={
-                i === 0
-                  ? "first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-amber-600 first-letter:float-left first-letter:mr-3 first-letter:mt-[-6px]"
+                i === 0 
+                  ? "first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-amber-600 first-letter:float-left first-letter:mr-1 first-letter:leading-none first-letter:mt-[-15]" 
                   : ""
               }
             >
