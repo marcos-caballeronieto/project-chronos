@@ -6,7 +6,11 @@ module.exports = {
     "./src/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        'blanco-roto': '#FDFBF7', 
+      },
+    },
   },
   plugins: [
     require('@tailwindcss/typography'),

@@ -12,10 +12,12 @@ export const metadata: Metadata = { title: "Chronos", description: "Historia Dia
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" suppressHydrationWarning>
-      <body className={`${inter.variable} ${merriweather.variable} antialiased bg-stone-50 dark:bg-stone-950`}>
+      <body className={`${inter.variable} ${merriweather.variable} antialiased bg-blanco-roto dark:bg-stone-950`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Navbar />
           <main className="min-h-screen p-4">{children}</main>
+
+          <div className="bg-noise mix-blend-overlay dark:mix-blend-soft-light"></div>
         </ThemeProvider>
       </body>
     </html>

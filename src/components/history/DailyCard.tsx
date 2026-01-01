@@ -4,7 +4,7 @@ import { Lightbulb } from "lucide-react";
 
 export default function DailyCard({ event }: { event: HistoryEvent }) {
   return (
-    <article className="group max-w-2xl mx-auto bg-white dark:bg-stone-900 shadow-xl rounded-2xl overflow-hidden my-8 border border-stone-100 dark:border-stone-800 transition-colors duration-300">
+    <article className="group max-w-2xl mx-auto bg-blanco-roto dark:bg-stone-900 shadow-xl rounded-2xl overflow-hidden my-8 border border-stone-100 dark:border-stone-800 transition-colors duration-300">
       <div className="relative w-full h-64 md:h-96 overflow-hidden">
         <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
           <Image
