@@ -4,8 +4,11 @@ export interface HistoryEvent {
   title: string;
   description: string;
   category: string;
+  
   imageUrl: string;
   imageCredit: string;
+  imagePosition?: string;
+
   story: string;
   funFact: string;
   year: number;

@@ -12,6 +12,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
             alt={event.title}
             fill
             className="object-cover"
+            style={{ objectPosition: event.imagePosition || "center" }}
             priority
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />

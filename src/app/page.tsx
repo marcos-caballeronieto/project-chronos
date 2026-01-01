@@ -10,7 +10,8 @@ const dummyEvent: HistoryEvent = {
   imageCredit: "NASA",
   funFact: "La computadora del Apolo tenía menos potencia que un reloj digital.",
   story: "Neil Armstrong descendió lentamente...\n\nEs un pequeño paso para el hombre...",
-  tags: ["Espacio", "Guerra Fría"]
+  tags: ["Espacio", "Guerra Fría"],
+  imagePosition: "0% 30%",
 };
 
 export default function Home() {
