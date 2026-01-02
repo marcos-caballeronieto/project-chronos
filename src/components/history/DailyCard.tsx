@@ -1,17 +1,78 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { HistoryEvent } from "@/types";
 import { Lightbulb, Maximize2, X } from "lucide-react";
 
+// --- Subcomponente para el Modal con Animación ---
+function ExpandedModal({ event, onClose }: { event: HistoryEvent; onClose: (e: React.MouseEvent) => void }) {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    // Activamos la animación un frame después del montaje para que la transición CSS funcione
+    const timer = requestAnimationFrame(() => setIsVisible(true));
+    return () => cancelAnimationFrame(timer);
+  }, []);
+
+  return (
+    <div 
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-blanco-roto/95 dark:bg-stone-900/95 backdrop-blur-lg p-4 md:p-8 transition-opacity duration-500 ease-out ${
+        isVisible ? "opacity-100" : "opacity-0"
+      }`}
+      onClick={onClose}
+    >
+      {/* Botón Cerrar */}
+      <button 
+        className="absolute top-4 right-4 md:top-8 md:right-8 text-stone-500 hover:text-stone-900 dark:text-white/50 dark:hover:text-white hover:bg-stone-200 dark:hover:bg-white/10 transition-all p-2 rounded-full z-[110] cursor-pointer"
+        onClick={onClose}
+        title="Cerrar (Esc)"
+      >
+        <X size={32} />
+      </button>
+
+      {/* Contenedor Visual con animación de escala y movimiento */}
+      <div 
+        className={`relative w-full h-full max-w-6xl max-h-[85vh] flex flex-col items-center justify-center transition-all duration-500 ease-out transform ${
+            isVisible ? "scale-100 translate-y-0" : "scale-95 translate-y-4"
+        }`}
+        onClick={(e) => e.stopPropagation()} 
+      >
+        {/* Imagen */}
+        <div className="relative w-full flex-1 shadow-2xl shadow-black rounded-sm overflow-hidden border border-stone-200 dark:border-stone-800/50 bg-black">
+          <Image
+            src={event.imageUrl}
+            alt={event.title}
+            fill
+            className="object-contain"
+            priority
+            quality={100}
+          />
+        </div>
+
+        {/* Pie de foto */}
+        <div className="mt-4 flex justify-center pointer-events-none w-full">
+          <div className="bg-white/70 dark:bg-black/70 backdrop-blur-md border border-stone-200 dark:border-white/10 px-6 py-3 rounded-full shadow-lg text-center max-w-[90%]">
+            <p className="text-stone-800 dark:text-stone-200 text-sm md:text-base font-serif tracking-wide">
+              <span className="text-amber-600 dark:text-amber-500 font-bold mr-2">{event.title}</span>
+              <span className="opacity-60 text-xs uppercase tracking-widest border-l border-stone-400 dark:border-white/20 pl-2 ml-1">
+                {event.imageCredit}
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Componente Principal ---
 export default function DailyCard({ event }: { event: HistoryEvent }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const handleOpen = (e: React.MouseEvent) => {
-    e.preventDefault(); // Previene comportamientos por defecto
-    e.stopPropagation(); // Evita que el clic "suba" a elementos padre
-    console.log("Abriendo modal..."); // Para depurar: abre la consola (F12) y mira si sale esto
+    e.preventDefault();
+    e.stopPropagation();
     setIsExpanded(true);
   };
 
@@ -38,7 +99,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
           </div>
 
-          {/* BOTÓN DE AMPLIAR - Z-Index 30 para estar seguro sobre la imagen */}
+          {/* Botón de ampliar */}
           <button
             onClick={handleOpen}
             className="absolute top-4 right-4 p-2 bg-black/60 hover:bg-amber-600 text-white rounded-full backdrop-blur-sm transition-all duration-300 opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 z-30 cursor-pointer shadow-lg hover:scale-110"
@@ -97,52 +158,8 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
         </div>
       </article>
 
-      {/* MODAL - Z-Index 100 para superar al ruido (z-50) */}
-      {isExpanded && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-blanco-roto/95 dark:bg-stone-900/95 backdrop-blur-lg p-4 md:p-8 transition-colors duration-300"
-          onClick={handleClose}
-        >
-          {/* Botón Cerrar (Mejorado: más grande y con fondo al pasar el mouse) */}
-          <button 
-            className="absolute top-4 right-4 md:top-8 md:right-8 text-stone-500 hover:text-stone-900 dark:text-white/50 dark:hover:text-white hover:bg-stone-200 dark:hover:bg-white/10 transition-all p-2 rounded-full z-[110] cursor-pointer"
-            onClick={handleClose}
-            title="Cerrar (Esc)"
-          >
-            <X size={32} />
-          </button>
-
-          {/* Contenedor Visual */}
-          <div 
-            className="relative w-full h-full max-w-6xl max-h-[85vh] flex flex-col items-center justify-center"
-            onClick={(e) => e.stopPropagation()} 
-          >
-            {/* Imagen con Sombra y Borde */}
-            <div className="relative w-full flex-1 shadow-2xl shadow-black rounded-sm overflow-hidden border border-stone-200 dark:border-stone-800/50 bg-black">
-              <Image
-                src={event.imageUrl}
-                alt={event.title}
-                fill
-                className="object-contain" // Mantiene la proporción sin recortes
-                priority
-                quality={100}
-              />
-            </div>
-
-            {/* Pie de foto tipo "Museo" */}
-            <div className="mt-4 flex justify-center pointer-events-none w-full">
-              <div className="bg-white/70 dark:bg-black/70 backdrop-blur-md border border-stone-200 dark:border-white/10 px-6 py-3 rounded-full shadow-lg text-center max-w-[90%]">
-                <p className="text-stone-800 dark:text-stone-200 text-sm md:text-base font-serif tracking-wide">
-                  <span className="text-amber-600 dark:text-amber-500 font-bold mr-2">{event.title}</span>
-                  <span className="opacity-60 text-xs uppercase tracking-widest border-l border-stone-400 dark:border-white/20 pl-2 ml-1">
-                    {event.imageCredit}
-                  </span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Renderizado condicional del Modal */}
+      {isExpanded && <ExpandedModal event={event} onClose={handleClose} />}
     </>
   );
 }
