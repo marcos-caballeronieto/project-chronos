@@ -68,19 +68,21 @@ function Timeline({ dateStr }: { dateStr: string }) {
         })}
       </div>
       
-      {/* Etiquetas de texto */}
+      {/* Etiquetas de texto - CORREGIDO PARA MÓVIL */}
       <div className="flex justify-between mt-2 text-stone-400 dark:text-stone-600">
         {ERAS.map((era, index) => (
           <div 
             key={era.name} 
-            className={`flex-1 text-center transition-colors duration-300 ${
+            className={`flex-1 text-center transition-colors duration-300 flex flex-col items-center justify-center ${
               index === currentEraIndex 
                 ? "text-amber-700 dark:text-amber-500 font-bold scale-105" 
-                : "opacity-50 scale-95 hidden sm:block" // Ocultamos las no activas en móvil muy pequeño si quieres, o dejamos sm:block
+                : "opacity-50 scale-95" // Eliminado 'hidden sm:block' para ver todas
             }`}
           >
-            <span className="hidden sm:inline">{era.name}</span>
-            <span className="sm:hidden">{era.short}</span>
+            {/* Desktop: Texto normal */}
+            <span className="hidden sm:inline text-[10px] md:text-xs">{era.name}</span>
+            {/* Móvil: Texto pequeño abreviado */}
+            <span className="sm:hidden text-[9px] tracking-tighter leading-none">{era.short}</span>
           </div>
         ))}
       </div>
@@ -208,8 +210,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
             </p>
           </div>
 
-          {/* NUEVO: TIMELINE HISTÓRICO */}
-          {/* Se inserta aquí para dar contexto antes del título */}
+          {/* TIMELINE HISTÓRICO */}
           <Timeline dateStr={event.date} />
 
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-stone-100 mb-6 mt-2">
