@@ -27,7 +27,7 @@ export default function Navbar() {
   if (!mounted) return null;
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-stone-200 dark:border-stone-800 bg-white/80 dark:bg-stone-950/80 backdrop-blur-md transition-colors duration-300">
+    <header className="sticky top-0 z-50 w-full border-b border-stone-200 dark:border-stone-800 bg-blanco-roto/80 dark:bg-stone-950/80 backdrop-blur-md transition-colors duration-300">
       <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
@@ -45,7 +45,7 @@ export default function Navbar() {
             onClick={() => setIsOpen(!isOpen)}
             className={`p-2 rounded-full transition-all duration-200 ${
               isOpen 
-                ? "bg-stone-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 rotate-90" 
+                ? "bg-blanco-roto-100 dark:bg-stone-800 text-stone-900 dark:text-stone-100 rotate-90" 
                 : "text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-stone-900 dark:hover:text-stone-100"
             }`}
             aria-label="Abrir configuración"

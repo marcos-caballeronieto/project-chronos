@@ -126,7 +126,7 @@ function ExpandedModal({ event, onClose }: { event: HistoryEvent; onClose: (e: R
         </div>
 
         <div className="mt-4 flex justify-center pointer-events-none w-full">
-          <div className="bg-white/70 dark:bg-black/70 backdrop-blur-md border border-stone-200 dark:border-white/10 px-6 py-3 rounded-full shadow-lg text-center max-w-[90%]">
+          <div className="bg-blanco-roto/90 dark:bg-black/70 backdrop-blur-md border border-stone-200 dark:border-white/10 px-6 py-3 rounded-full shadow-lg text-center max-w-[90%]">
             <p className="text-stone-800 dark:text-stone-200 text-xs md:text-sm font-mono tracking-widest uppercase">
               <span className="text-amber-600 dark:text-amber-500 font-bold mr-2">{event.title}</span>
               <span className="opacity-60 border-l border-stone-400 dark:border-white/20 pl-2 ml-1">

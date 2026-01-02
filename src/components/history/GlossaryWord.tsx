@@ -2,8 +2,8 @@
 import { useState } from "react";
 
 interface GlossaryWordProps {
-  term: string;        // El término tal como aparece en el texto
-  definition: string;  // La definición a mostrar
+  term: string;        
+  definition: string;  
 }
 
 export const GlossaryWord = ({ term, definition }: GlossaryWordProps) => {
@@ -15,7 +15,7 @@ export const GlossaryWord = ({ term, definition }: GlossaryWordProps) => {
       onMouseEnter={() => setIsOpen(true)}
       onMouseLeave={() => setIsOpen(false)}
       onClick={(e) => {
-        e.stopPropagation(); // Evita conflictos con otros clicks en la tarjeta
+        e.stopPropagation(); 
         setIsOpen(!isOpen);
       }}
     >
@@ -27,20 +27,17 @@ export const GlossaryWord = ({ term, definition }: GlossaryWordProps) => {
       {/* Tooltip */}
       <span
         className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 p-4 
-        bg-stone-900/95 text-white text-sm rounded-xl shadow-xl backdrop-blur-sm
+        bg-blanco-roto/95 dark:bg-stone-900/95 
+        text-stone-800 dark:text-stone-100 
+        text-sm rounded-xl shadow-xl backdrop-blur-sm
         z-50 transition-all duration-200 pointer-events-none origin-bottom
-        border border-stone-700
+        border border-stone-200 dark:border-stone-700
         ${isOpen ? "opacity-100 scale-100 translate-y-0" : "opacity-0 scale-95 translate-y-2"}`}
       >
-        <span className="block font-serif font-bold text-amber-500 text-base mb-1 border-b border-white/10 pb-1">
+        <span className="block font-serif font-bold text-amber-600 dark:text-amber-500 text-base mb-1 border-b border-stone-200 dark:border-stone-700 pb-1">
           {term}
         </span>
-        <span className="leading-relaxed text-stone-300">
-          {definition}
-        </span>
-        
-        {/* Flechita del tooltip */}
-        <span className="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-stone-900/95" />
+        {definition}
       </span>
     </span>
   );

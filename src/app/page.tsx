@@ -42,7 +42,7 @@ Es un pequeño paso para el hombre, pero un gran salto para la humanidad.`,
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-stone-100 dark:bg-black py-12 px-4">
+    <main className="min-h-screen bg-blanco-roto dark:bg-stone-950 py-12 px-4">
       <DailyCard event={dummyEvent} />
     </main>
   );
