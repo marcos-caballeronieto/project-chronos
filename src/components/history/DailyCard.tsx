@@ -5,7 +5,90 @@ import Image from "next/image";
 import { HistoryEvent } from "@/types";
 import { Lightbulb, Maximize2, X } from "lucide-react";
 
-// --- Subcomponente para el Modal ---
+// --- CONSTANTES Y UTILIDADES PARA EL TIMELINE ---
+
+const ERAS = [
+  { name: "Prehistoria", short: "PRE", start: -100000, end: -3000 },
+  { name: "Antigüedad", short: "ANT", start: -3000, end: 476 },
+  { name: "Edad Media", short: "MED", start: 476, end: 1492 },
+  { name: "Edad Moderna", short: "MOD", start: 1492, end: 1789 },
+  { name: "Contemporánea", short: "CONT", start: 1789, end: new Date().getFullYear() }
+];
+
+// Función auxiliar para extraer el año del string de fecha
+function parseYear(dateStr: string): number {
+  const normalize = dateStr.toLowerCase();
+  // Busca 1 a 4 dígitos seguidos opcionalmente de "a.c" o "bc"
+  const match = normalize.match(/(\d{1,4})\s*(?:a\.?c\.?|b\.?c\.?|antes de cristo)?/);
+  
+  if (!match) return new Date().getFullYear();
+
+  let year = parseInt(match[1], 10);
+  // Si detecta indicadores de "antes de Cristo", lo vuelve negativo
+  if (normalize.includes("a.c") || normalize.includes("bc") || normalize.includes("antes")) {
+    year = -year;
+  }
+  return year;
+}
+
+// --- SUBCOMPONENTE TIMELINE ---
+function Timeline({ dateStr }: { dateStr: string }) {
+  const year = parseYear(dateStr);
+  const currentEraIndex = ERAS.findIndex(e => year < e.end) !== -1 
+    ? ERAS.findIndex(e => year < e.end) 
+    : ERAS.length - 1;
+  
+  const currentEra = ERAS[currentEraIndex];
+  
+  // Calcular porcentaje dentro de la época actual para el marcador
+  const eraSpan = currentEra.end - currentEra.start;
+  const yearProgress = Math.max(0, Math.min(100, ((year - currentEra.start) / eraSpan) * 100));
+
+  return (
+    <div className="w-full mb-6 font-mono text-[10px] uppercase tracking-wider select-none">
+      {/* Barra visual */}
+      <div className="flex w-full h-2 rounded-full overflow-hidden bg-stone-200 dark:bg-stone-800 border border-stone-200 dark:border-stone-700/50">
+        {ERAS.map((era, index) => {
+          const isActive = index === currentEraIndex;
+          return (
+            <div 
+              key={era.name} 
+              className={`relative flex-1 border-r border-stone-100 dark:border-stone-900 last:border-0 transition-colors duration-500 ${
+                isActive ? "bg-amber-100 dark:bg-amber-900/30" : ""
+              }`}
+            >
+              {isActive && (
+                <div 
+                  className="absolute top-0 bottom-0 w-1 bg-amber-600 rounded-full shadow-[0_0_8px_rgba(217,119,6,0.8)] z-10"
+                  style={{ left: `${yearProgress}%` }}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Etiquetas de texto */}
+      <div className="flex justify-between mt-2 text-stone-400 dark:text-stone-600">
+        {ERAS.map((era, index) => (
+          <div 
+            key={era.name} 
+            className={`flex-1 text-center transition-colors duration-300 ${
+              index === currentEraIndex 
+                ? "text-amber-700 dark:text-amber-500 font-bold scale-105" 
+                : "opacity-50 scale-95 hidden sm:block" // Ocultamos las no activas en móvil muy pequeño si quieres, o dejamos sm:block
+            }`}
+          >
+            <span className="hidden sm:inline">{era.name}</span>
+            <span className="sm:hidden">{era.short}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- SUBCOMPONENTE MODAL (Sin cambios funcionales, solo mantenido) ---
 function ExpandedModal({ event, onClose }: { event: HistoryEvent; onClose: (e: React.MouseEvent) => void }) {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -61,13 +144,12 @@ function ExpandedModal({ event, onClose }: { event: HistoryEvent; onClose: (e: R
   );
 }
 
-// --- Componente Principal ---
+// --- COMPONENTE PRINCIPAL ---
 export default function DailyCard({ event }: { event: HistoryEvent }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [isVisible, setIsVisible] = useState(false); // Estado para la animación de entrada
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // Activamos la animación al montar el componente
     setIsVisible(true);
   }, []);
 
@@ -90,6 +172,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
         transition-all duration-1000 ease-out transform 
         ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
       >
+        {/* IMAGEN DE CABECERA */}
         <div className="relative w-full h-64 md:h-96 overflow-hidden">
           <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
             <Image
@@ -113,8 +196,10 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
           </button>
         </div>
 
+        {/* CONTENIDO */}
         <div className="p-6 md:p-10">
-           <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-4">
+           {/* Metadatos (Categoría y Fecha texto) */}
+           <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
             <span className="inline-flex items-center justify-center px-3 py-1 text-xs font-bold text-white uppercase bg-amber-600 rounded-full shadow-sm w-fit">
               {event.category}
             </span>
@@ -123,7 +208,11 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
             </p>
           </div>
 
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-stone-100 mb-6">
+          {/* NUEVO: TIMELINE HISTÓRICO */}
+          {/* Se inserta aquí para dar contexto antes del título */}
+          <Timeline dateStr={event.date} />
+
+          <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-stone-100 mb-6 mt-2">
             {event.title}
           </h1>
           
