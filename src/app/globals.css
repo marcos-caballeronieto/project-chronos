@@ -13,3 +13,39 @@
   opacity: 0.05; /* Ajusta esto: 0.03 es muy sutil, 0.07 es muy notorio */
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
 }
+
+/* === BARRA DE SCROLL PERSONALIZADA === */
+
+/* El "cuerpo" de la barra */
+::-webkit-scrollbar {
+  width: 10px; /* Ancho vertical */
+  height: 10px; /* Alto horizontal */
+}
+
+/* El fondo por donde corre la barra (Track) */
+::-webkit-scrollbar-track {
+  background: transparent; /* Transparente para que flote sobre el fondo */
+}
+
+/* La "pastilla" que arrastras (Thumb) */
+::-webkit-scrollbar-thumb {
+  background-color: #d6d3d1; /* Stone-300: Gris suave para modo claro */
+  border-radius: 9999px; /* Totalmente redondeado */
+  border: 3px solid transparent; /* Truco: borde transparente crea margen alrededor */
+  background-clip: content-box; /* Hace que el color respete el borde transparente */
+}
+
+/* Hover: un poco más oscuro al pasar el ratón */
+::-webkit-scrollbar-thumb:hover {
+  background-color: #a8a29e; /* Stone-400 */
+}
+
+/* === MODO OSCURO === */
+/* Detectamos la clase .dark en el HTML (ya que usas darkMode: 'class') */
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #44403c; /* Stone-700: Gris oscuro para modo noche */
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #57534e; /* Stone-600: Un poco más claro al hover */
+}
