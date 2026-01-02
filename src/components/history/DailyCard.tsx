@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { HistoryEvent } from "@/types";
+import { HistoryEvent, GlossaryTerm } from "@/types";
 import { Lightbulb, Maximize2, X } from "lucide-react";
+import { GlossaryWord } from "./GlossaryWord";
 
 // --- CONSTANTES Y UTILIDADES PARA EL TIMELINE ---
 
@@ -18,13 +19,11 @@ const ERAS = [
 // Función auxiliar para extraer el año del string de fecha
 function parseYear(dateStr: string): number {
   const normalize = dateStr.toLowerCase();
-  // Busca 1 a 4 dígitos seguidos opcionalmente de "a.c" o "bc"
   const match = normalize.match(/(\d{1,4})\s*(?:a\.?c\.?|b\.?c\.?|antes de cristo)?/);
   
   if (!match) return new Date().getFullYear();
 
   let year = parseInt(match[1], 10);
-  // Si detecta indicadores de "antes de Cristo", lo vuelve negativo
   if (normalize.includes("a.c") || normalize.includes("bc") || normalize.includes("antes")) {
     year = -year;
   }
@@ -40,13 +39,11 @@ function Timeline({ dateStr }: { dateStr: string }) {
   
   const currentEra = ERAS[currentEraIndex];
   
-  // Calcular porcentaje dentro de la época actual para el marcador
   const eraSpan = currentEra.end - currentEra.start;
   const yearProgress = Math.max(0, Math.min(100, ((year - currentEra.start) / eraSpan) * 100));
 
   return (
     <div className="w-full mb-6 font-mono text-[10px] uppercase tracking-wider select-none">
-      {/* Barra visual */}
       <div className="flex w-full h-2 rounded-full overflow-hidden bg-stone-200 dark:bg-stone-800 border border-stone-200 dark:border-stone-700/50">
         {ERAS.map((era, index) => {
           const isActive = index === currentEraIndex;
@@ -68,7 +65,6 @@ function Timeline({ dateStr }: { dateStr: string }) {
         })}
       </div>
       
-      {/* Etiquetas de texto - CORREGIDO PARA MÓVIL */}
       <div className="flex justify-between mt-2 text-stone-400 dark:text-stone-600">
         {ERAS.map((era, index) => (
           <div 
@@ -76,12 +72,10 @@ function Timeline({ dateStr }: { dateStr: string }) {
             className={`flex-1 text-center transition-colors duration-300 flex flex-col items-center justify-center ${
               index === currentEraIndex 
                 ? "text-amber-700 dark:text-amber-500 font-bold scale-105" 
-                : "opacity-50 scale-95" // Eliminado 'hidden sm:block' para ver todas
+                : "opacity-50 scale-95"
             }`}
           >
-            {/* Desktop: Texto normal */}
             <span className="hidden sm:inline text-[10px] md:text-xs">{era.name}</span>
-            {/* Móvil: Texto pequeño abreviado */}
             <span className="sm:hidden text-[9px] tracking-tighter leading-none">{era.short}</span>
           </div>
         ))}
@@ -90,7 +84,7 @@ function Timeline({ dateStr }: { dateStr: string }) {
   );
 }
 
-// --- SUBCOMPONENTE MODAL (Sin cambios funcionales, solo mantenido) ---
+// --- SUBCOMPONENTE MODAL ---
 function ExpandedModal({ event, onClose }: { event: HistoryEvent; onClose: (e: React.MouseEvent) => void }) {
   const [isVisible, setIsVisible] = useState(false);
 
@@ -146,6 +140,34 @@ function ExpandedModal({ event, onClose }: { event: HistoryEvent; onClose: (e: R
   );
 }
 
+// --- UTILIDAD PARA PROCESAR EL GLOSARIO ---
+const renderTextWithGlossary = (text: string, glossary?: GlossaryTerm[]) => {
+  if (!glossary || glossary.length === 0) return text;
+
+  // Ordenamos términos por longitud (descendente) para evitar conflictos parciales
+  const sortedGlossary = [...glossary].sort((a, b) => b.term.length - a.term.length);
+  
+  // Creamos Regex para encontrar los términos exactos
+  const regexPattern = new RegExp(`(${sortedGlossary.map(g => g.term).join('|')})`, 'gi');
+  const parts = text.split(regexPattern);
+
+  return parts.map((part, index) => {
+    // Verificamos si la parte actual coincide con algún término del glosario
+    const glossaryItem = sortedGlossary.find(g => g.term.toLowerCase() === part.toLowerCase());
+
+    if (glossaryItem) {
+      return (
+        <GlossaryWord 
+          key={index} 
+          term={part} // Mantenemos mayúsculas/minúsculas originales del texto
+          definition={glossaryItem.definition} 
+        />
+      );
+    }
+    return part;
+  });
+};
+
 // --- COMPONENTE PRINCIPAL ---
 export default function DailyCard({ event }: { event: HistoryEvent }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -170,12 +192,11 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
   return (
     <>
       <article 
-        className={`group max-w-2xl mx-auto bg-transparent shadow-xl rounded-2xl overflow-hidden my-8 
+        className={`group max-w-2xl mx-auto bg-transparent shadow-xl rounded-2xl overflow-visible my-8 
         transition-all duration-1000 ease-out transform 
         ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
       >
-        {/* IMAGEN DE CABECERA - MODIFICADO */}
-        {/* Antes: h-72 md:h-96 | Ahora: h-96 md:h-[500px] para más impacto vertical */}
+        {/* IMAGEN DE CABECERA (Altura ajustada a 500px en escritorio) */}
         <div className="relative w-full h-96 md:h-[500px] overflow-hidden">
           <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
             <Image
@@ -186,7 +207,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
               style={{ objectPosition: event.imagePosition || "center" }}
               priority
             />
-            {/* Gradiente sutil para que el texto resalte si la imagen es clara */}
+            {/* Gradiente para mejorar legibilidad en transición */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           </div>
 
@@ -200,10 +221,9 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
           </button>
         </div>
 
-        {/* CONTENIDO (Mantiene el efecto overlap) */}
+        {/* CONTENIDO (Con margen negativo aumentado a -mt-16) */}
         <div className="relative z-10 -mt-16 bg-blanco-roto dark:bg-stone-900 rounded-t-3xl p-6 md:p-10 border-x border-b border-stone-100 dark:border-stone-800 rounded-b-2xl">
            
-           {/* El resto del contenido sigue igual... */}
            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
             <span className="inline-flex items-center justify-center px-3 py-1 text-xs font-bold text-white uppercase bg-amber-600 rounded-full shadow-sm w-fit">
               {event.category}
@@ -212,23 +232,23 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
               {event.date} • {event.imageCredit}
             </p>
           </div>
-          
-          {/* ... (Resto del componente Timeline, Título, Historia, etc.) */}
+
           <Timeline dateStr={event.date} />
 
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-stone-100 mb-6 mt-2">
             {event.title}
           </h1>
-
+          
           <div className="bg-stone-50 dark:bg-stone-800/50 border-l-4 border-amber-600 p-4 mb-8 italic text-stone-700 dark:text-stone-300 rounded-xl">
             <span className="flex items-center gap-2 font-bold not-italic block mb-1 text-amber-800 dark:text-amber-500">
               <Lightbulb size={18} /> ¿Sabías que...?
             </span>
-            {event.funFact}
+            {/* Renderizado con glosario en Fun Fact */}
+            {renderTextWithGlossary(event.funFact, event.glossary)}
           </div>
-
+          
           <div className="prose prose-stone dark:prose-invert prose-lg max-w-none text-stone-700 dark:text-stone-300">
-            {event.story.split('\n').map((p, i) => (
+            {event.story.split('\n').map((paragraph, i) => (
               <p 
                 key={i} 
                 className={
@@ -237,11 +257,12 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
                     : ""
                 }
               >
-                {p}
+                {/* Renderizado con glosario en la historia */}
+                {renderTextWithGlossary(paragraph, event.glossary)}
               </p>
             ))}
           </div>
-
+          
           {event.tags && event.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t border-stone-100 dark:border-stone-800 flex gap-2 flex-wrap">
               {event.tags.map((tag) => (
