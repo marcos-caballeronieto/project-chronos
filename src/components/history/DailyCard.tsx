@@ -192,12 +192,14 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
   return (
     <>
       <article 
+        // CAMBIO APLICADO: overflow-visible para permitir que el glosario sobresalga
         className={`group max-w-2xl mx-auto bg-transparent shadow-xl rounded-2xl overflow-visible my-8 
         transition-all duration-1000 ease-out transform 
         ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
       >
         {/* IMAGEN DE CABECERA (Altura ajustada a 500px en escritorio) */}
-        <div className="relative w-full h-96 md:h-[500px] overflow-hidden">
+        {/* CAMBIO APLICADO: rounded-t-2xl para redondear la imagen manualmente */}
+        <div className="relative w-full h-96 md:h-[500px] overflow-hidden rounded-t-2xl">
           <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
             <Image
               src={event.imageUrl}
