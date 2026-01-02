@@ -170,12 +170,13 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
   return (
     <>
       <article 
-        className={`group max-w-2xl mx-auto bg-blanco-roto dark:bg-stone-900 shadow-xl rounded-2xl overflow-hidden my-8 border border-stone-100 dark:border-stone-800 
+        className={`group max-w-2xl mx-auto bg-transparent shadow-xl rounded-2xl overflow-hidden my-8 
         transition-all duration-1000 ease-out transform 
         ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
       >
-        {/* IMAGEN DE CABECERA */}
-        <div className="relative w-full h-64 md:h-96 overflow-hidden">
+        {/* IMAGEN DE CABECERA - MODIFICADO */}
+        {/* Antes: h-72 md:h-96 | Ahora: h-96 md:h-[500px] para más impacto vertical */}
+        <div className="relative w-full h-96 md:h-[500px] overflow-hidden">
           <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
             <Image
               src={event.imageUrl}
@@ -185,7 +186,8 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
               style={{ objectPosition: event.imagePosition || "center" }}
               priority
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+            {/* Gradiente sutil para que el texto resalte si la imagen es clara */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
           </div>
 
           <button
@@ -198,9 +200,10 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
           </button>
         </div>
 
-        {/* CONTENIDO */}
-        <div className="p-6 md:p-10">
-           {/* Metadatos (Categoría y Fecha texto) */}
+        {/* CONTENIDO (Mantiene el efecto overlap) */}
+        <div className="relative z-10 -mt-16 bg-blanco-roto dark:bg-stone-900 rounded-t-3xl p-6 md:p-10 border-x border-b border-stone-100 dark:border-stone-800 rounded-b-2xl">
+           
+           {/* El resto del contenido sigue igual... */}
            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
             <span className="inline-flex items-center justify-center px-3 py-1 text-xs font-bold text-white uppercase bg-amber-600 rounded-full shadow-sm w-fit">
               {event.category}
@@ -209,21 +212,21 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
               {event.date} • {event.imageCredit}
             </p>
           </div>
-
-          {/* TIMELINE HISTÓRICO */}
+          
+          {/* ... (Resto del componente Timeline, Título, Historia, etc.) */}
           <Timeline dateStr={event.date} />
 
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-stone-900 dark:text-stone-100 mb-6 mt-2">
             {event.title}
           </h1>
-          
+
           <div className="bg-stone-50 dark:bg-stone-800/50 border-l-4 border-amber-600 p-4 mb-8 italic text-stone-700 dark:text-stone-300 rounded-xl">
             <span className="flex items-center gap-2 font-bold not-italic block mb-1 text-amber-800 dark:text-amber-500">
               <Lightbulb size={18} /> ¿Sabías que...?
             </span>
             {event.funFact}
           </div>
-          
+
           <div className="prose prose-stone dark:prose-invert prose-lg max-w-none text-stone-700 dark:text-stone-300">
             {event.story.split('\n').map((p, i) => (
               <p 
@@ -238,7 +241,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
               </p>
             ))}
           </div>
-          
+
           {event.tags && event.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t border-stone-100 dark:border-stone-800 flex gap-2 flex-wrap">
               {event.tags.map((tag) => (
