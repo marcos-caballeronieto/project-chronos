@@ -6,6 +6,7 @@ import { HistoryEvent, GlossaryTerm } from "@/types";
 import { Lightbulb, Maximize2, X } from "lucide-react";
 import { GlossaryWord } from "./GlossaryWord";
 import ShareButton from "@/components/common/ShareButton";
+import BookRecommendation from "@/components/common/BookRecommendation";
 
 // --- CONSTANTES Y UTILIDADES PARA EL TIMELINE ---
 
@@ -292,6 +293,9 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
               />
             </div>
           )}
+
+          {/* Recomendación de libro afiliado */}
+          <BookRecommendation />
         </div>
       </article>
 
