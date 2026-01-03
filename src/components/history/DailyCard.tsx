@@ -192,7 +192,8 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
 
   // Construimos el texto que se compartirá
   const shareTitle = event.title;
-  const shareText = `¿Sabías que en ${parseYear(event.date)} ocurrió esto? ${event.funFact}`;
+  // Nuevo formato: Título + ¿Sabías qué? + Dato
+  const shareText = `${event.title}. ¿Sabías qué? ${event.funFact}`;
   const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   return (

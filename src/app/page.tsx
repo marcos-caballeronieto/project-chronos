@@ -1,6 +1,7 @@
 // src/app/page.tsx
 import DailyCard from "@/components/history/DailyCard";
 import { HistoryEvent } from "@/types";
+import { Metadata } from "next"; // Importar Metadata
 
 const dummyEvent: HistoryEvent = {
   id: "1", 
@@ -38,6 +39,24 @@ Es un pequeño paso para el hombre, pero un gran salto para la humanidad.`,
       definition: "Como referencia, el Apollo Guidance Computer (AGC) tenía solo 2KB de RAM y 36KB de ROM. Un reloj inteligente moderno es millones de veces más potente."
     }
   ]
+};
+
+export const metadata: Metadata = {
+  title: dummyEvent.title,
+  description: dummyEvent.description,
+  openGraph: {
+    images: [
+      {
+        url: dummyEvent.imageUrl,
+        width: 1200,
+        height: 630,
+        alt: dummyEvent.title,
+      },
+    ],
+  },
+  twitter: {
+    images: [dummyEvent.imageUrl],
+  },
 };
 
 export default function Home() {

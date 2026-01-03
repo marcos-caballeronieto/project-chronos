@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Share2, Check, Link as LinkIcon, AlertCircle } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Share2, Check, Link as LinkIcon, Twitter, MessageCircle } from "lucide-react";
 
 interface ShareButtonProps {
   title?: string;
@@ -12,126 +12,129 @@ interface ShareButtonProps {
 
 export default function ShareButton({
   title = "Project Chronos",
-  text = "Descubre la historia, un día a la vez.",
+  text = "Descubre la historia.",
   url,
   className = "",
 }: ShareButtonProps) {
+  const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [error, setError] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  // Función auxiliar para copiar texto de forma segura (Fallback legacy)
-  const copyToClipboard = async (textToCopy: string) => {
-    try {
-      // 1. Intento moderno
-      if (navigator.clipboard && window.isSecureContext) {
-        await navigator.clipboard.writeText(textToCopy);
-        return true;
-      } else {
-        throw new Error("Clipboard API no disponible");
+  // Obtenemos la URL del navegador si no se pasa como prop
+  const shareUrl = url || (typeof window !== "undefined" ? window.location.href : "");
+  
+  // Texto completo para WhatsApp
+  const fullText = `${text} ${shareUrl}`;
+
+  // Cerrar menú si clicamos fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
       }
-    } catch (err) {
-      // 2. Fallback antiguo (funciona en HTTP y navegadores viejos)
-      try {
-        const textArea = document.createElement("textarea");
-        textArea.value = textToCopy;
-        
-        // Aseguramos que el textarea no sea visible pero sea parte del DOM
-        textArea.style.position = "fixed";
-        textArea.style.left = "-9999px";
-        textArea.style.top = "0";
-        document.body.appendChild(textArea);
-        
-        textArea.focus();
-        textArea.select();
-        
-        const successful = document.execCommand("copy");
-        document.body.removeChild(textArea);
-        return successful;
-      } catch (legacyErr) {
-        console.error("Fallo total al copiar", legacyErr);
-        return false;
-      }
-    }
-  };
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const handleShare = async () => {
-    const shareUrl = url || (typeof window !== "undefined" ? window.location.href : "");
-    const shareData = { title, text, url: shareUrl };
+  const handleMainClick = () => {
+    // 1. DETECCIÓN DE MÓVIL:
+    // Solo usamos el menú nativo (navigator.share) si estamos realmente en un móvil (Android/iPhone).
+    // Esto evita que en PC se intente abrir un menú nativo que a veces no funciona bien o es invisible.
+    const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-    // Reiniciar estados
-    setError(false);
-    setCopied(false);
-
-    // 1. Intentar API Nativa (Móviles)
-    // Verificamos si existe share y si podemos compartir esos datos
-    if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData);
-        // Si se comparte con éxito, no hacemos nada más (o podrías mostrar un check)
-      } catch (err) {
-        // Si el usuario cancela, no es un error real.
-        if ((err as Error).name !== "AbortError") {
-          console.error("Error al compartir:", err);
-          // Si falla la nativa (no por cancelar), intentamos copiar el texto completo
-          triggerCopy(`${title}\n\n${text}\n\n${shareUrl}`);
-        }
-      }
+    if (isMobileDevice && navigator.share) {
+      navigator.share({
+        title,
+        text,
+        url: shareUrl,
+      }).catch((err) => console.log("Compartir cancelado", err));
     } else {
-      // 2. Si no hay soporte nativo (PC o HTTP), copiamos el texto completo al portapapeles
-      triggerCopy(`${title}\n\n${text}\n\n${shareUrl}`);
+      // 2. EN PC / DESKTOP:
+      // Abrimos siempre nuestro menú personalizado con iconos
+      setIsOpen(!isOpen);
     }
   };
 
-  const triggerCopy = async (textToCopy: string) => {
-    const success = await copyToClipboard(textToCopy);
-    if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } else {
-      setError(true);
-      setTimeout(() => setError(false), 2000);
-    }
+  const copyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    setIsOpen(false);
   };
+
+  // Configuración de redes sociales
+  const socialLinks = [
+    {
+      name: "X / Twitter",
+      icon: <Twitter size={16} />,
+      // Usamos intent de Twitter
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
+      color: "hover:text-black dark:hover:text-white"
+    },
+    {
+      name: "WhatsApp",
+      icon: <MessageCircle size={16} />,
+      // Usamos api de WhatsApp
+      href: `https://wa.me/?text=${encodeURIComponent(fullText)}`,
+      color: "hover:text-green-500"
+    },
+    {
+      name: "Reddit",
+      icon: <span className="font-bold text-xs">R</span>,
+      href: `https://www.reddit.com/submit?url=${encodeURIComponent(shareUrl)}&title=${encodeURIComponent(title)}`,
+      color: "hover:text-orange-500"
+    }
+  ];
 
   return (
-    <button
-      onClick={handleShare}
-      className={`relative inline-flex items-center justify-center rounded-md p-2 transition-colors focus:outline-none focus:ring-2 focus:ring-ring ${
-        error 
-          ? "text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20" 
-          : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-      } ${className}`}
-      aria-label="Compartir"
-      title="Compartir esta página"
-    >
-      <div className="relative">
-        <Share2
-          className={`h-5 w-5 transition-all duration-300 ${
-            copied || error ? "scale-0 opacity-0" : "scale-100 opacity-100"
-          }`}
-        />
-        
-        {/* Icono de Éxito */}
-        <Check
-          className={`absolute inset-0 h-5 w-5 text-green-500 transition-all duration-300 ${
-            copied ? "scale-100 opacity-100" : "-rotate-90 scale-0 opacity-0"
-          }`}
-        />
+    <div className="relative" ref={menuRef}>
+      <button
+        onClick={handleMainClick}
+        className={`relative inline-flex items-center justify-center rounded-md p-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500 
+          ${isOpen ? "bg-stone-200 dark:bg-stone-700 text-amber-600 scale-110" : "text-stone-500 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-amber-600"} 
+          ${className}`}
+        aria-label="Compartir"
+        title="Compartir"
+        type="button"
+      >
+        <Share2 className="h-5 w-5" />
+      </button>
 
-        {/* Icono de Error (Visual feedback si falla todo) */}
-        <AlertCircle
-          className={`absolute inset-0 h-5 w-5 text-red-500 transition-all duration-300 ${
-            error ? "scale-100 opacity-100" : "rotate-90 scale-0 opacity-0"
-          }`}
-        />
-      </div>
-      
-      {/* Toast flotante */}
-      {copied && (
-        <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-stone-800 px-2 py-1 text-xs font-medium text-white shadow-md animate-in fade-in slide-in-from-top-1 z-50">
-          ¡Texto copiado!
-        </span>
+      {/* MENÚ DESPLEGABLE (Visible solo cuando isOpen es true) */}
+      {isOpen && (
+        <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-stone-900 rounded-xl shadow-xl border border-stone-200 dark:border-stone-700 overflow-hidden flex flex-col animate-in fade-in slide-in-from-bottom-2 z-50">
+          <div className="p-2 border-b border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-950/50">
+            <p className="text-[10px] uppercase tracking-wider text-stone-500 font-bold text-center">
+              Compartir en
+            </p>
+          </div>
+          
+          {socialLinks.map((social) => (
+            <a
+              key={social.name}
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex items-center gap-3 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors ${social.color}`}
+              onClick={() => setIsOpen(false)}
+            >
+              {social.icon}
+              <span className="font-medium">{social.name}</span>
+            </a>
+          ))}
+
+          <button
+            onClick={copyLink}
+            className="flex items-center gap-3 px-4 py-2.5 text-sm text-stone-600 dark:text-stone-300 hover:bg-stone-50 dark:hover:bg-stone-800 transition-colors border-t border-stone-100 dark:border-stone-800 text-left w-full"
+          >
+            {copied ? <Check size={16} className="text-green-500" /> : <LinkIcon size={16} />}
+            <span className={copied ? "text-green-600 font-bold" : ""}>
+              {copied ? "¡Copiado!" : "Copiar enlace"}
+            </span>
+          </button>
+        </div>
       )}
-    </button>
+    </div>
   );
 }

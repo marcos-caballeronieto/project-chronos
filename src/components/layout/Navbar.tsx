@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Moon, Sun, Hourglass, Settings, Monitor } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
-import ShareButton from "@/components/common/ShareButton"; // <--- Importamos el botón nuevo
 
 export default function Navbar() {
   const { theme, setTheme } = useTheme();
@@ -48,12 +47,6 @@ export default function Navbar() {
         {/* ACCIONES DERECHA */}
         <div className="flex items-center gap-2">
           
-          {/* 1. BOTÓN DE COMPARTIR (Nuevo) */}
-          {/* Lo pasamos con estilos que coincidan con tu navbar (hover stone) */}
-          <ShareButton 
-            className="text-stone-600 hover:text-stone-900 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-stone-100 dark:hover:bg-stone-800 rounded-md transition-colors" 
-          />
-
           {/* 2. MENÚ DE AJUSTES (Dropdown) */}
           <div className="relative" ref={menuRef}>
             <button
