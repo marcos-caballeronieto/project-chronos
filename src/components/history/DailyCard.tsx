@@ -5,6 +5,7 @@ import Image from "next/image";
 import { HistoryEvent, GlossaryTerm } from "@/types";
 import { Lightbulb, Maximize2, X } from "lucide-react";
 import { GlossaryWord } from "./GlossaryWord";
+import ShareButton from "@/components/common/ShareButton";
 
 // --- CONSTANTES Y UTILIDADES PARA EL TIMELINE ---
 
@@ -189,6 +190,11 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
     setIsExpanded(false);
   };
 
+  // Construimos el texto que se compartirá
+  const shareTitle = event.title;
+  const shareText = `¿Sabías que en ${parseYear(event.date)} ocurrió esto? ${event.funFact}`;
+  const shareUrl = typeof window !== 'undefined' ? window.location.href : '';
+
   return (
     <>
       <article 
@@ -242,7 +248,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
           </h1>
           
           <div className="bg-stone-50 dark:bg-stone-800/50 border-l-4 border-amber-600 p-4 mb-8 italic text-stone-700 dark:text-stone-300 rounded-xl">
-            <span className="flex items-center gap-2 font-bold not-italic block mb-1 text-amber-800 dark:text-amber-500">
+            <span className="flex items-center gap-2 font-bold not-italic mb-1 text-amber-800 dark:text-amber-500">
               <Lightbulb size={18} /> ¿Sabías que...?
             </span>
             {/* Renderizado con glosario en Fun Fact */}
@@ -266,15 +272,23 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
           </div>
           
           {event.tags && event.tags.length > 0 && (
-            <div className="mt-8 pt-6 border-t border-stone-100 dark:border-stone-800 flex gap-2 flex-wrap">
-              {event.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="px-3 py-1 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 text-xs font-medium rounded-md"
-                >
-                  #{tag}
-                </span>
-              ))}
+            <div className="mt-8 pt-6 border-t border-stone-100 dark:border-stone-800 flex justify-between items-center">
+              <div className="flex gap-2 flex-wrap">
+                {event.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 text-xs font-medium rounded-md"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+              <ShareButton
+                title={shareTitle}
+                text={shareText}
+                url={shareUrl}
+                className="hover:bg-stone-100 dark:hover:bg-stone-800 p-1.5 h-8 w-8 rounded-md transition-colors"
+              />
             </div>
           )}
         </div>
