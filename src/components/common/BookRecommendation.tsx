@@ -48,7 +48,7 @@ const BookRecommendation: React.FC<BookRecommendationProps> = ({
       </div>
       {/* Disclaimer legal obligatorio */}
       <p className="text-xs text-stone-500 dark:text-stone-400 mt-4 leading-relaxed">
-        En calidad de Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables.
+        En calidad de Afiliado de Amazon, obtengo ingresos por las compras adscritas que cumplen los requisitos aplicables, esto ayuda a mantener la web así como a seguir mejorandola con nuevo contenido y funcionalidades. Gracias por tu apoyo.
       </p>
     </div>
   );

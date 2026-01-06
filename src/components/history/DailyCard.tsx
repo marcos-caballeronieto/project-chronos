@@ -294,8 +294,20 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
             </div>
           )}
 
-          {/* Recomendación de libro afiliado */}
-          <BookRecommendation />
+          {/* Recomendación de libro afiliado - Por implementar */}
+          {/* 
+            TODO: Reemplazar el amazonLink con tu enlace de afiliado de Amazon cuando esté activo
+            Formato esperado: "https://amzn.to/TU_CODIGO" o tu enlace de Amazon Associates
+            Para cambiar el libro, actualiza:
+            - bookImage: URL de la portada del libro en Amazon
+            - bookTitle: Título del libro
+            - amazonLink: Tu enlace de afiliado
+          */}
+          {/* <BookRecommendation 
+            bookImage="https://m.media-amazon.com/images/I/51X5pQX8AEL._SY445_SX342_.jpg"
+            bookTitle="Sapiens: De animales a dioses"
+            amazonLink="https://a.co/d/1fzR4Rk" // Reemplazar con tu enlace de afiliado
+          /> */}
         </div>
       </article>
 
