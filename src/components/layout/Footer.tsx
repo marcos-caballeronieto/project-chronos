@@ -24,7 +24,7 @@ const Footer = () => {
             href="/about" 
             className="hover:text-primary transition-colors"
           >
-            Sobre mí
+            Sobre el Proyecto
           </Link>
           <Link 
             href="/bugs" 
@@ -39,7 +39,7 @@ const Footer = () => {
             rel="noopener noreferrer"
             className="hover:text-primary transition-colors font-semibold text-primary/90"
           >
-            ☕ Invítame a un café
+            Apoya el Proyecto
           </Link>
         </nav>
 
