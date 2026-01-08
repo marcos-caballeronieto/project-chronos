@@ -207,7 +207,10 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
       >
         {/* IMAGEN DE CABECERA (Altura ajustada a 500px en escritorio) */}
         {/* CAMBIO APLICADO: rounded-t-2xl para redondear la imagen manualmente */}
-        <div className="relative w-full h-96 md:h-[500px] overflow-hidden rounded-t-2xl">
+        <div 
+          className="relative w-full h-96 md:h-[500px] overflow-hidden rounded-t-2xl cursor-pointer" 
+          onClick={handleOpen}
+        >
           <div className="absolute inset-0 transition-transform duration-700 group-hover:scale-105">
             <Image
               src={event.imageUrl}
