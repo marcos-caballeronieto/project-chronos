@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+
+const FORMSPREE_URL = process.env.NEXT_PUBLIC_FORMSPREE_URL || "";
 import { Bug, Lightbulb, Send, AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 
@@ -28,9 +30,29 @@ export default function BugsPage() {
     e.preventDefault();
     setStatus("submitting");
 
-    // Simulación de envío
-    await new Promise((resolve) => setTimeout(resolve, 1500)); 
-    setStatus("success");
+    try {
+      const response = await fetch(FORMSPREE_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          _replyto: formData.email,
+          title: formData.title,
+          description: formData.description,
+          type: formData.type,
+        }),
+      });
+      if (response.ok) {
+        setStatus("success");
+      } else {
+        setStatus("idle");
+        alert("Hubo un error al enviar el formulario. Intenta de nuevo más tarde.");
+      }
+    } catch (error) {
+      setStatus("idle");
+      alert("Hubo un error al enviar el formulario. Intenta de nuevo más tarde.");
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
