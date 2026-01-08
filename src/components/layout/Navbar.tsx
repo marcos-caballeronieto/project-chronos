@@ -31,23 +31,33 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-stone-200 dark:border-stone-800 bg-background/80 backdrop-blur-md transition-colors duration-300">
       <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
         
-        {/* LOGO E IDENTIDAD */}
-        <Link 
-          href="/" 
-          className="flex items-center gap-2 hover:opacity-80 transition-opacity"
-        >
-          <div className="p-1.5 bg-stone-100 dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700">
-            <Hourglass size={18} className="text-amber-600 dark:text-amber-500" />
-          </div>
-          <span className="font-bold text-stone-800 dark:text-stone-100 tracking-tight hidden sm:block">
-            Project Chronos
-          </span>
-        </Link>
-
-        {/* ACCIONES DERECHA */}
+        {/* Botón para ir a la página inicial */}
         <div className="flex items-center gap-2">
-          
-          {/* 2. MENÚ DE AJUSTES (Dropdown) */}
+          <Link
+            href="/"
+            className="p-2 rounded-md bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-400 hover:text-stone-900 hover:bg-stone-200 dark:hover:text-stone-100 dark:hover:bg-stone-700 transition-all duration-200 flex items-center gap-2"
+            title="Ir al inicio"
+            aria-label="Ir al inicio"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l9-9 9 9M4 10v10a1 1 0 001 1h4a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h4a1 1 0 001-1V10" /></svg>
+            <span className="hidden sm:inline font-medium">Inicio</span>
+          </Link>
+          {/* LOGO E IDENTIDAD */}
+          <Link 
+            href="/" 
+            className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          >
+            <div className="p-1.5 bg-stone-100 dark:bg-stone-800 rounded-lg border border-stone-200 dark:border-stone-700">
+              <Hourglass size={18} className="text-amber-600 dark:text-amber-500" />
+            </div>
+            <span className="font-bold text-stone-800 dark:text-stone-100 tracking-tight hidden sm:block">
+              Project Chronos
+            </span>
+          </Link>
+        </div>
+
+        {/* MENÚ DE AJUSTES (Dropdown) */}
+        <div className="flex items-center gap-2">
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setIsOpen(!isOpen)}
