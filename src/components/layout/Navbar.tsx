@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Moon, Sun, Hourglass, Settings, Monitor } from "lucide-react";
+import { Moon, Sun, Hourglass, Settings, Monitor, Type, Minus, Plus } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 
@@ -9,9 +9,17 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [fontSizeLevel, setFontSizeLevel] = useState(2);
+  const fontSizes = ["prose-sm", "prose-base", "prose-lg", "prose-xl", "prose-2xl"];
+  const fontLabels = ["XS", "S", "M", "L", "XL"];
   const menuRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    setMounted(true);
+    // Cargar tamaño de fuente guardado
+    const saved = localStorage.getItem('fontSizeLevel');
+    if (saved) setFontSizeLevel(parseInt(saved));
+  }, []);
 
   // Cierra el menú si haces clic fuera de él
   useEffect(() => {
@@ -23,6 +31,21 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  // Funciones para cambiar tamaño de fuente
+  const increaseFont = () => {
+    const newLevel = Math.min(fontSizeLevel + 1, fontSizes.length - 1);
+    setFontSizeLevel(newLevel);
+    localStorage.setItem('fontSizeLevel', newLevel.toString());
+    window.dispatchEvent(new CustomEvent('fontSizeChanged', { detail: newLevel }));
+  };
+  
+  const decreaseFont = () => {
+    const newLevel = Math.max(fontSizeLevel - 1, 0);
+    setFontSizeLevel(newLevel);
+    localStorage.setItem('fontSizeLevel', newLevel.toString());
+    window.dispatchEvent(new CustomEvent('fontSizeChanged', { detail: newLevel }));
+  };
 
   // Prevenimos renderizado incorrecto en el servidor (Hydration Mismatch)
   if (!mounted) return null;
@@ -100,6 +123,59 @@ export default function Navbar() {
                     {theme === "dark" ? <Moon size={12} /> : <Sun size={12} />}
                   </div>
                 </button>
+
+                {/* Separador */}
+                <div className="border-b border-stone-100 dark:border-stone-800" />
+
+                {/* Opción: Tamaño de Fuente */}
+                <div className="px-4 py-3">
+                  <div className="flex items-center gap-3 mb-3">
+                    <Type size={16} className="text-stone-400" />
+                    <span className="text-sm font-medium text-stone-700 dark:text-stone-300">
+                      Tamaño de letra
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={decreaseFont} 
+                      disabled={fontSizeLevel === 0}
+                      className="p-1.5 text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-md disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      title="Reducir letra"
+                    >
+                      <Minus size={14} />
+                    </button>
+                    <div className="flex-1">
+                      <div className="flex gap-1">
+                        {fontLabels.map((label, index) => (
+                          <button
+                            key={index}
+                            onClick={() => {
+                              setFontSizeLevel(index);
+                              localStorage.setItem('fontSizeLevel', index.toString());
+                              window.dispatchEvent(new CustomEvent('fontSizeChanged', { detail: index }));
+                            }}
+                            className={`flex-1 py-1 px-1.5 text-xs font-medium rounded transition-all ${
+                              fontSizeLevel === index
+                                ? "bg-amber-600 text-white"
+                                : "bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700"
+                            }`}
+                            title={`Tamaño ${label}`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <button 
+                      onClick={increaseFont} 
+                      disabled={fontSizeLevel === fontSizes.length - 1}
+                      className="p-1.5 text-stone-500 hover:text-stone-900 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-md disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                      title="Aumentar letra"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+                </div>
 
                 {/* Aquí podrías añadir más opciones futuras, como el switch del "Modo Zen" */}
               

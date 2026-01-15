@@ -174,9 +174,26 @@ const renderTextWithGlossary = (text: string, glossary?: GlossaryTerm[]) => {
 export default function DailyCard({ event }: { event: HistoryEvent }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  
+  // NUEVO: Estado para el tamaño de fuente (sincronizado con localStorage)
+  const [fontSizeLevel, setFontSizeLevel] = useState(2); 
+  const fontSizes = ["prose-sm", "prose-base", "prose-lg", "prose-xl", "prose-2xl"];
 
   useEffect(() => {
     setIsVisible(true);
+    
+    // Cargar tamaño de fuente guardado
+    const saved = localStorage.getItem('fontSizeLevel');
+    if (saved) setFontSizeLevel(parseInt(saved));
+    
+    // Escuchar cambios desde el navbar
+    const handleFontSizeChange = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setFontSizeLevel(customEvent.detail);
+    };
+    
+    window.addEventListener('fontSizeChanged', handleFontSizeChange);
+    return () => window.removeEventListener('fontSizeChanged', handleFontSizeChange);
   }, []);
 
   const handleOpen = (e: React.MouseEvent) => {
@@ -237,7 +254,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
         {/* CONTENIDO (Con margen negativo aumentado a -mt-16) */}
         <div className="relative z-10 -mt-16 bg-blanco-roto dark:bg-stone-900 rounded-t-3xl p-6 md:p-10 border-x border-b border-stone-100 dark:border-stone-800 rounded-b-2xl">
            
-           <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
             <span className="inline-flex items-center justify-center px-3 py-1 text-xs font-bold text-white uppercase bg-amber-600 rounded-full shadow-sm w-fit">
               {event.category}
             </span>
@@ -260,7 +277,8 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
             {renderTextWithGlossary(event.funFact, event.glossary)}
           </div>
           
-          <div className="prose prose-stone dark:prose-invert prose-lg max-w-none text-stone-700 dark:text-stone-300">
+          {/* APLICADO: Clase dinámica para el tamaño de fuente */}
+          <div className={`prose prose-stone dark:prose-invert ${fontSizes[fontSizeLevel]} max-w-none text-stone-700 dark:text-stone-300 transition-all duration-300`}>
             {event.story.split('\n').map((paragraph, i) => (
               <p 
                 key={i} 
@@ -270,7 +288,6 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
                     : ""
                 }
               >
-                {/* Renderizado con glosario en la historia */}
                 {renderTextWithGlossary(paragraph, event.glossary)}
               </p>
             ))}
