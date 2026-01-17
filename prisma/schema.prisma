@@ -1,0 +1,49 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id            String   @id @default(uuid())
+  date          String   // Formato "YYYY-MM-DD"
+  year          Int
+  title         String
+  description   String
+  category      String
+  
+  imageUrl      String
+  imageCredit   String
+  imagePosition String?  // El ? lo hace opcional (nullable)
+
+  story         String
+  funFact       String
+  
+  // Relaciones
+  tags          Tag[]
+  glossary      GlossaryTerm[]
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Tag {
+  id      String  @id @default(uuid())
+  name    String
+  events  Event[] // Relación muchos-a-muchos implícita
+}
+
+model GlossaryTerm {
+  id         String @id @default(uuid())
+  term       String
+  definition String
+  
+  // Relación Uno-a-Muchos (Un evento tiene muchos términos)
+  eventId    String
+  event      Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}

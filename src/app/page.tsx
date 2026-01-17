@@ -1,68 +1,70 @@
 // src/app/page.tsx
 import DailyCard from "@/components/history/DailyCard";
 import { HistoryEvent } from "@/types";
-import { Metadata } from "next"; // Importar Metadata
+import { prisma } from "@/lib/prisma"; // 1. Importamos la conexión
+import { Metadata } from "next";
 
-const dummyEvent: HistoryEvent = {
-  id: "1", 
-  date: "1969-07-20", 
-  year: 1969,
-  title: "El gran salto de la humanidad",
-  description: "Apolo 11 llega a la Luna.",
-  category: "Ciencia",
-  imageUrl: "https://images.unsplash.com/photo-1541873676-a18131494184?q=80&w=1000&auto=format&fit=crop",
-  imageCredit: "NASA",
-  imagePosition: "0% 30%",
-  
-  // Dato curioso: aquí probaremos si detecta "Apolo" y "reloj digital"
-  funFact: "La computadora del Apolo tenía menos potencia que un reloj digital actual.",
-  
-  // Historia: aquí probaremos si detecta "Neil Armstrong"
-  story: `Neil Armstrong descendió lentamente por la escalerilla del módulo lunar. Al pisar la superficie polvorienta, pronunció la frase que pasaría a la historia.
-  
-Es un pequeño paso para el hombre, pero un gran salto para la humanidad.`,
-  
-  tags: ["Espacio", "Guerra Fría"],
-
-  // --- NUEVA SECCIÓN: GLOSARIO ---
-  glossary: [
-    {
-      term: "Apolo",
-      definition: "Programa espacial de la NASA (1961-1972) que logró llevar al ser humano a la Luna. La misión Apolo 11 fue la primera en aterrizar con éxito."
-    },
-    {
-      term: "Neil Armstrong",
-      definition: "(1930-2012) Astronauta estadounidense, ingeniero aeronáutico y el primer ser humano en caminar sobre la Luna."
-    },
-    {
-      term: "reloj digital",
-      definition: "Como referencia, el Apollo Guidance Computer (AGC) tenía solo 2KB de RAM y 36KB de ROM. Un reloj inteligente moderno es millones de veces más potente."
+// 2. Función para obtener datos de la DB
+async function getDailyEvent(): Promise<HistoryEvent | null> {
+  const eventDB = await prisma.event.findFirst({
+    // Importante: Debemos pedir explícitamente las relaciones
+    include: {
+      tags: true,
+      glossary: true,
     }
-  ]
-};
+  });
 
-export const metadata: Metadata = {
-  title: dummyEvent.title,
-  description: dummyEvent.description,
-  openGraph: {
-    images: [
-      {
-        url: dummyEvent.imageUrl,
-        width: 1200,
-        height: 630,
-        alt: dummyEvent.title,
-      },
-    ],
-  },
-  twitter: {
-    images: [dummyEvent.imageUrl],
-  },
-};
+  if (!eventDB) return null;
 
-export default function Home() {
+  // 3. Mapeo de datos: Prisma devuelve objetos, pero tu UI espera strings simples para los tags
+  const mappedEvent: HistoryEvent = {
+    ...eventDB,
+    // Convertimos el array de objetos Tag [{id, name}, ...] a array de strings ["Espacio", ...]
+    tags: eventDB.tags.map(tag => tag.name),
+    // El glosario ya coincide con la estructura requerida, así que lo pasamos tal cual
+    glossary: eventDB.glossary.map(g => ({
+      term: g.term,
+      definition: g.definition
+    }))
+  };
+
+  return mappedEvent;
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const event = await getDailyEvent();
+  
+  if (!event) {
+    return {
+      title: "Project Chronos",
+      description: "La historia día a día."
+    };
+  }
+
+  return {
+    title: event.title,
+    description: event.description,
+    openGraph: {
+      images: [{ url: event.imageUrl, width: 1200, height: 630, alt: event.title }],
+    },
+  };
+}
+
+export default async function Home() {
+  // 4. Llamamos a la función asíncrona dentro del componente
+  const event = await getDailyEvent();
+
+  if (!event) {
+    return (
+      <main className="min-h-screen flex items-center justify-center bg-blanco-roto dark:bg-stone-950">
+        <p className="text-xl text-stone-500">No hay eventos históricos para hoy.</p>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-blanco-roto dark:bg-stone-950 py-12 px-4">
-      <DailyCard event={dummyEvent} />
+      <DailyCard event={event} />
     </main>
   );
 }
