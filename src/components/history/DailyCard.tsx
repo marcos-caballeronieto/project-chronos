@@ -178,6 +178,15 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
   // NUEVO: Estado para el tamaño de fuente (sincronizado con localStorage)
   const [fontSizeLevel, setFontSizeLevel] = useState(2); 
   const fontSizes = ["prose-sm", "prose-base", "prose-lg", "prose-xl", "prose-2xl"];
+  
+  // NUEVO: Tamaños dinámicos para la letra capital según el nivel de zoom
+  const dropCapSizes = [
+    "first-letter:text-4xl first-letter:mt-1", // Para sm
+    "first-letter:text-5xl first-letter:mt-2", // Para base
+    "first-letter:text-6xl first-letter:mt-2", // Para lg (Default)
+    "first-letter:text-7xl first-letter:mt-3", // Para xl
+    "first-letter:text-8xl first-letter:mt-3"  // Para 2xl
+  ];
 
   useEffect(() => {
     setIsVisible(true);
@@ -284,7 +293,9 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
                 key={i} 
                 className={
                   i === 0 
-                    ? "first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-amber-600 first-letter:float-left first-letter:mr-1 first-letter:leading-none first-letter:mt-[-15]" 
+                    // CAMBIO: Eliminado float y márgenes complejos. 
+                    // Usamos text-[1.5em] para que escale automáticamente con la fuente base.
+                    ? "first-letter:text-[1.5em] first-letter:font-serif first-letter:font-bold first-letter:text-amber-600 dark:first-letter:text-amber-500 first-letter:relative first-letter:-top-1 first-letter:leading-none" 
                     : ""
                 }
               >
