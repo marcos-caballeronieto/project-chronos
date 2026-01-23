@@ -48,3 +48,8 @@ content_engine/.env
 content_engine/__pycache__/
 content_engine/*.pyc
 content_engine/target_date.txt
+
+# Temporal Data from Content Engine
+content_engine/queue.json
+content_engine/generated_event.json
+content_engine/archive/
