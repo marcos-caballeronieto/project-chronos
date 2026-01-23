@@ -1,14 +1,19 @@
-// src/app/page.tsx
 import DailyCard from "@/components/history/DailyCard";
 import { HistoryEvent } from "@/types";
 import { prisma } from "@/lib/prisma";
 import { Metadata } from "next";
+import { cache } from "react"; // IMPORTANTE: Para optimizar la petición interna
 
-// Lógica de Selección del Evento
-async function getDailyEvent(): Promise<HistoryEvent | null> {
+// ⏱️ CONFIGURACIÓN ISR:
+// Esto le dice a Next.js: "Guarda esta página en caché por 3600 segundos (1 hora)".
+// - Si entran 1000 usuarios en esa hora, la DB no se entera (0 consumo).
+// - Pasada la hora, el primer usuario activará una regeneración silenciosa para ver si ya es "mañana".
+export const revalidate = 3600; 
+
+// Envolvemos la lógica en 'cache' para que generateMetadata y Home no hagan 2 consultas separadas en la misma visita
+const getDailyEvent = cache(async (): Promise<HistoryEvent | null> => {
   const now = new Date();
   
-  // Definimos el rango de "Hoy" (desde las 00:00 hasta las 23:59)
   const startOfDay = new Date(now.setHours(0, 0, 0, 0));
   const endOfDay = new Date(now.setHours(23, 59, 59, 999));
 
@@ -16,8 +21,8 @@ async function getDailyEvent(): Promise<HistoryEvent | null> {
   const eventToday = await prisma.event.findFirst({
     where: {
       lastShownAt: {
-        gte: startOfDay, // Mayor o igual al inicio del día
-        lte: endOfDay,   // Menor o igual al final del día
+        gte: startOfDay,
+        lte: endOfDay,
       },
     },
     include: { tags: true, glossary: true },
@@ -27,36 +32,34 @@ async function getDailyEvent(): Promise<HistoryEvent | null> {
     return mapEventData(eventToday);
   }
 
-  // 2. Si no hay evento de hoy, buscamos uno NUEVO (que nunca se haya mostrado)
-  // Opcional: Podrías añadir un filtro aquí para buscar efemérides que coincidan con la fecha actual
+  // 2. Si no, buscamos uno NUEVO
   let nextEvent = await prisma.event.findFirst({
     where: {
-      lastShownAt: null, // Nunca usado
+      lastShownAt: null, 
     },
     include: { tags: true, glossary: true },
   });
 
-  // 3. Si se acabaron los eventos nuevos, RECICLAMOS el más antiguo
+  // 3. Si no hay nuevos, RECICLAMOS el más antiguo
   if (!nextEvent) {
     nextEvent = await prisma.event.findFirst({
       orderBy: {
-        lastShownAt: 'asc', // El que tiene la fecha más vieja
+        lastShownAt: 'asc', 
       },
       include: { tags: true, glossary: true },
     });
   }
 
-  // Si aún así no hay nada (Base de datos vacía), devolvemos null
   if (!nextEvent) return null;
 
-  // 4. Marcamos el evento elegido como "Visto hoy"
+  // 4. Marcamos el evento elegido
   await prisma.event.update({
     where: { id: nextEvent.id },
     data: { lastShownAt: new Date() },
   });
 
   return mapEventData(nextEvent);
-}
+});
 
 // Helper para limpiar/transformar datos antes de enviarlos al frontend
 function mapEventData(eventDB: any): HistoryEvent {
