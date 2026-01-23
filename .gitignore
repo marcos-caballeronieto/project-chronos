@@ -41,3 +41,10 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+# --- Content Engine (Python Backend) ---
+content_engine/venv/
+content_engine/.env
+content_engine/__pycache__/
+content_engine/*.pyc
+content_engine/target_date.txt
