@@ -5,13 +5,15 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"  // IMPORTANTE: Ahora es postgresql
   url      = env("DATABASE_URL")
 }
 
+// --- MODELOS DE DATOS ---
+
 model Event {
   id            String   @id @default(uuid())
-  date          String   // Formato "YYYY-MM-DD"
+  date          String
   year          Int
   title         String
   description   String
@@ -19,7 +21,7 @@ model Event {
   
   imageUrl      String
   imageCredit   String
-  imagePosition String?  // El ? lo hace opcional (nullable)
+  imagePosition String?
 
   story         String
   funFact       String
@@ -27,17 +29,19 @@ model Event {
   // Relaciones
   tags          Tag[]
   glossary      GlossaryTerm[]
+  favoritedBy   Favorite[]      // Relación inversa: ¿A quién le gusta esto?
+
+  // Lógica de rotación diaria
+  lastShownAt   DateTime? 
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  lastShownAt   DateTime?
 }
 
 model Tag {
   id      String  @id @default(uuid())
   name    String
-  events  Event[] // Relación muchos-a-muchos implícita
+  events  Event[]
 }
 
 model GlossaryTerm {
@@ -45,7 +49,35 @@ model GlossaryTerm {
   term       String
   definition String
   
-  // Relación Uno-a-Muchos (Un evento tiene muchos términos)
   eventId    String
   event      Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+}
+
+// --- USUARIOS Y AUTH ---
+
+model User {
+  id        String   @id // Sin @default: usaremos el mismo ID que genere Supabase Auth
+  email     String   @unique
+  name      String?
+  
+  // Preparado para el futuro
+  isPremium Boolean  @default(false) 
+  
+  favorites Favorite[]
+  createdAt DateTime @default(now())
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  assignedAt DateTime @default(now())
+
+  // Evita duplicados: un usuario no puede dar "like" dos veces al mismo evento
+  @@unique([userId, eventId])
 }
