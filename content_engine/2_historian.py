@@ -26,12 +26,23 @@ def get_next_topic_from_queue():
         print("📭 La cola está vacía.")
         return None
 
-    next_topic = queue.pop(0)
-    
-    with open(QUEUE_FILE, "w", encoding="utf-8") as f:
-        json.dump(queue, f, indent=2, ensure_ascii=False)
+    return queue[0]  # Retornamos el tema SIN eliminarlo de la cola
+
+def remove_topic_from_queue(topic):
+    """Elimina un tema de la cola solo si fue procesado exitosamente."""
+    if not os.path.exists(QUEUE_FILE):
+        return
         
-    return next_topic
+    with open(QUEUE_FILE, "r", encoding="utf-8") as f:
+        try:
+            queue = json.load(f)
+        except:
+            return
+    
+    if topic in queue:
+        queue.remove(topic)
+        with open(QUEUE_FILE, "w", encoding="utf-8") as f:
+            json.dump(queue, f, indent=2, ensure_ascii=False)
 
 def clean_json_response(text):
     text = text.strip()
@@ -59,7 +70,7 @@ def generate_history(topic):
     
     INSTRUCCIONES DE METADATOS:
     1. **Tags:** Selecciona entre 2 y 5 categorías clave (ej: "Guerra Fría", "Espionaje", "Siglo XX").
-    2. **Glosario:** Identifica 2-10 términos QUE APAREZCAN EN TU TEXTO que un lector promedio podría no conocer. Pueden ser:
+    2. **Glosario:** Identifica 5-15 términos QUE APAREZCAN EN TU TEXTO que un lector promedio podría no conocer. Pueden ser:
        - Nombres de personas clave.
        - Nombres de operaciones militares o tratados.
        - Términos técnicos o en otros idiomas.
@@ -67,7 +78,7 @@ def generate_history(topic):
     SALIDA JSON OBLIGATORIA:
     {{
       "date": "YYYY-MM-DD", (Fecha precisa del evento)
-      "year": 1969,
+      "year": "AAAA", (Año del evento principal) (Si no es un año único, usa el más representativo)
       "title": "{topic}", (Puedes mejorarlo para que sea más 'clicky' pero fiel)
       "description": "Descripción para redes sociales (max 140 caracteres).",
       "category": "History", (Elige la mejor: History, Science, Art, Technology, Space, Mystery)
@@ -91,6 +102,25 @@ def generate_history(topic):
         print(f"❌ Error generando contenido: {e}")
         return None
 
+def generate_history_with_retries(topic, max_retries=2):
+    """Envuelve generate_history con reintentos automáticos."""
+    for attempt in range(max_retries + 1):  # 0, 1, 2 (3 intentos totales)
+        print(f"[Intento {attempt + 1}/{max_retries + 1}]")
+        data = generate_history(topic)
+        
+        if data:
+            print(f"✅ Contenido generado exitosamente en intento {attempt + 1}.")
+            return data
+        
+        if attempt < max_retries:
+            wait_time = 2 ** (attempt + 1)  # 2s, 4s, 8s
+            print(f"⏸️  Esperando {wait_time}s antes del siguiente intento...")
+            time.sleep(wait_time)
+        else:
+            print(f"❌ Se agotaron los {max_retries + 1} intentos. Tema permanece en queue.json.")
+    
+    return None
+
 def save_draft(data):
     # Crear carpeta si no existe
     if not os.path.exists(DRAFTS_DIR):
@@ -111,13 +141,17 @@ if __name__ == "__main__":
     topic = get_next_topic_from_queue()
     
     if topic:
-        data = generate_history(topic)
+        data = generate_history_with_retries(topic, max_retries=2)  # 3 intentos totales
         
         if data:
             saved_file = save_draft(data)
+            # Solo eliminar de la cola si fue exitoso
+            remove_topic_from_queue(topic)
             
-            # Calculamos cuántos quedan
             remaining = len(json.load(open(QUEUE_FILE)))
             print(f"✅ Artículo generado: '{data['title']}'")
             print(f"📉 Quedan {remaining} temas en la cola.")
+        else:
+            # No eliminamos de la cola si falló
+            print(f"⏳ '{topic}' permanece en la cola para reintentar después.")
             print("⏳ Pausa de seguridad aplicada.")
