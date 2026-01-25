@@ -29,10 +29,32 @@ def clean_json_response(text):
     if text.endswith("```"): text = text[:-3]
     return text
 
+def filter_duplicates(new_topics, existing_titles):
+    """Filtra temas duplicados comparando sin distinción de mayúsculas/minúsculas."""
+    # Normalizar títulos existentes para comparación
+    existing_normalized = {title.lower().strip() for title in existing_titles}
+    
+    unique_topics = []
+    duplicates = []
+    
+    for topic in new_topics:
+        topic_normalized = topic.lower().strip()
+        if topic_normalized not in existing_normalized:
+            unique_topics.append(topic)
+            existing_normalized.add(topic_normalized)  # Evitar duplicados dentro del mismo batch
+        else:
+            duplicates.append(topic)
+    
+    if duplicates:
+        print(f"⚠️  Se descartaron {len(duplicates)} duplicados: {duplicates}")
+    
+    return unique_topics
+
 def suggest_batch_topics(existing_titles):
     print(f"📚 Consultando registro: {len(existing_titles)} temas ya cubiertos.")
     
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    # TODO: TEMPORAL - Volver a 'gemini-2.5-flash' cuando termine el periodo de pruebas
+    model = genai.GenerativeModel('gemini-2.5-flash-lite')
     
     # Si hay muchos temas, solo le pasamos los últimos 50 para no saturar el prompt innecesariamente
     lista_texto = ", ".join(existing_titles[-50:]) if existing_titles else "Ninguno."
@@ -69,14 +91,17 @@ if __name__ == "__main__":
         titulos = get_local_titles()
         
         # 2. Generar Batch
-        nuevos_temas = suggest_batch_topics(titulos)
+        nuevos_temas_raw = suggest_batch_topics(titulos)
+        
+        # 3. Validar duplicados
+        nuevos_temas = filter_duplicates(nuevos_temas_raw, titulos)
         
         if nuevos_temas:
-            print(f"💎 ¡Éxito! Se han encontrado {len(nuevos_temas)} temas:")
+            print(f"💎 ¡Éxito! Se han encontrado {len(nuevos_temas)} temas únicos:")
             for t in nuevos_temas:
                 print(f"   - {t}")
             
-            # 3. Guardar en la COLA (queue.json)
+            # 4. Guardar en la COLA (queue.json)
             # Si ya había cosas en la cola, las mantenemos y añadimos las nuevas
             current_queue = []
             if os.path.exists(QUEUE_FILE):
@@ -91,7 +116,7 @@ if __name__ == "__main__":
             with open(QUEUE_FILE, "w", encoding="utf-8") as f:
                 json.dump(current_queue, f, indent=2, ensure_ascii=False)
             
-            # 4. Registrar en historial permanente
+            # 5. Registrar en historial permanente
             save_titles_to_log(nuevos_temas)
             print(f"\n✅ Guardados en '{QUEUE_FILE}' y registrados en '{LOG_FILE}'.")
         else:

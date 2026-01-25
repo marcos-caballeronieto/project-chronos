@@ -43,7 +43,8 @@ def get_next_draft_file():
 # --- 1.5 GENERADOR DE TÉRMINO DE BÚSQUEDA (IA) ---
 def generate_search_term(full_title):
     """Usa IA para extraer el término de búsqueda más efectivo para Wikimedia Commons."""
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    # TODO: TEMPORAL - Volver a 'gemini-2.5-flash' cuando termine el periodo de pruebas
+    model = genai.GenerativeModel('gemini-2.5-flash-lite')
     
     prompt = f"""Genera el MEJOR término de búsqueda para Wikimedia Commons capturando el tema principal del título.
 
@@ -210,7 +211,8 @@ def clean_json_response(text):
 
 def review_and_fix_content(event_data):
     print(f"🧐 Editor IA revisando borrador...")
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    # TODO: TEMPORAL - Volver a 'gemini-2.5-flash' cuando termine el periodo de pruebas
+    model = genai.GenerativeModel('gemini-2.5-flash-lite')
     
     # Prompt enfocado en mantener campos críticos y mejorar narrativa
     prompt = f"""

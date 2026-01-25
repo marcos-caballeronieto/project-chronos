@@ -43,7 +43,8 @@ def clean_json_response(text):
 def generate_history(topic):
     print(f"✍️  Investigando y escribiendo sobre: '{topic}'...")
     
-    model = genai.GenerativeModel('gemini-2.5-flash')
+    # TODO: TEMPORAL - Volver a 'gemini-2.5-flash' cuando termine el periodo de pruebas
+    model = genai.GenerativeModel('gemini-2.5-flash-lite')
     
     # --- PROMPT AVANZADO DE ESCRITURA ---
     prompt = f"""
