@@ -1,6 +1,7 @@
 import os
 import json
 import time  # Importamos time para la pausa
+import re
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -8,7 +9,7 @@ load_dotenv()
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 QUEUE_FILE = "queue.json"
-OUTPUT_FILE = "generated_event.json"
+DRAFTS_DIR = "drafts"  # 📂 Nueva carpeta de destino
 
 def get_next_topic_from_queue():
     if not os.path.exists(QUEUE_FILE):
@@ -57,7 +58,7 @@ def generate_history(topic):
     
     INSTRUCCIONES DE METADATOS:
     1. **Tags:** Selecciona entre 2 y 5 categorías clave (ej: "Guerra Fría", "Espionaje", "Siglo XX").
-    2. **Glosario:** Identifica 2-4 términos QUE APAREZCAN EN TU TEXTO que un lector promedio podría no conocer. Pueden ser:
+    2. **Glosario:** Identifica 2-10 términos QUE APAREZCAN EN TU TEXTO que un lector promedio podría no conocer. Pueden ser:
        - Nombres de personas clave.
        - Nombres de operaciones militares o tratados.
        - Términos técnicos o en otros idiomas.
@@ -89,6 +90,22 @@ def generate_history(topic):
         print(f"❌ Error generando contenido: {e}")
         return None
 
+def save_draft(data):
+    # Crear carpeta si no existe
+    if not os.path.exists(DRAFTS_DIR):
+        os.makedirs(DRAFTS_DIR)
+    
+    # Crear nombre de archivo seguro (ej: "La_Guerra_Civil.json")
+    safe_title = "".join([c for c in data['title'] if c.isalnum() or c in (' ', '-', '_')]).strip()
+    safe_title = re.sub(r'\s+', '_', safe_title) # Reemplazar espacios por guiones bajos
+    filename = f"{safe_title}.json"
+    filepath = os.path.join(DRAFTS_DIR, filename)
+    
+    with open(filepath, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    
+    return filename
+
 if __name__ == "__main__":
     topic = get_next_topic_from_queue()
     
@@ -96,8 +113,7 @@ if __name__ == "__main__":
         data = generate_history(topic)
         
         if data:
-            with open(OUTPUT_FILE, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+            saved_file = save_draft(data)
             
             # Calculamos cuántos quedan
             remaining = len(json.load(open(QUEUE_FILE)))

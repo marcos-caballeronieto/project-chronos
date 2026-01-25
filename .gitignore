@@ -53,3 +53,4 @@ content_engine/target_date.txt
 content_engine/queue.json
 content_engine/generated_event.json
 content_engine/archive/
+content_engine/drafts/
