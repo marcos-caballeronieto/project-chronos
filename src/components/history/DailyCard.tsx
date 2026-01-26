@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
+import ReactMarkdown from "react-markdown";
 import { HistoryEvent, GlossaryTerm } from "@/types";
 import { Lightbulb, Maximize2, X } from "lucide-react";
 import { GlossaryWord } from "./GlossaryWord";
@@ -287,22 +288,16 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
           </div>
           
           {/* APLICADO: Clase dinámica para el tamaño de fuente */}
-          <div className={`prose prose-stone dark:prose-invert ${fontSizes[fontSizeLevel]} max-w-none text-stone-700 dark:text-stone-300 transition-all duration-300`}>
-            {event.story.split('\n').map((paragraph, i) => (
-              <p 
-                key={i} 
-                className={
-                  i === 0 
-                    // CAMBIO: Eliminado float y márgenes complejos. 
-                    // Usamos text-[1.5em] para que escale automáticamente con la fuente base.
-                    ? "first-letter:text-[1.5em] first-letter:font-serif first-letter:font-bold first-letter:text-amber-600 dark:first-letter:text-amber-500 first-letter:relative first-letter:-top-1 first-letter:leading-none" 
-                    : ""
-                }
-              >
-                {renderTextWithGlossary(paragraph, event.glossary)}
-              </p>
-            ))}
-          </div>
+          <article className={`prose prose-lg prose-stone dark:prose-invert ${fontSizes[fontSizeLevel]} max-w-none 
+            prose-headings:font-serif prose-headings:font-bold 
+            prose-p:text-stone-700 dark:prose-p:text-stone-300 prose-p:leading-8
+            prose-strong:text-amber-600 dark:prose-strong:text-amber-500 prose-strong:font-bold
+            prose-a:text-amber-600 hover:prose-a:text-amber-700 transition-all
+            transition-all duration-300`}>
+            <ReactMarkdown>
+              {event.story}
+            </ReactMarkdown>
+          </article>
           
           {event.tags && event.tags.length > 0 && (
             <div className="mt-8 pt-6 border-t border-stone-100 dark:border-stone-800 flex justify-between items-center">
