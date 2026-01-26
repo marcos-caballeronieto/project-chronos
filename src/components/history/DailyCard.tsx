@@ -144,31 +144,37 @@ function ExpandedModal({ event, onClose }: { event: HistoryEvent; onClose: (e: R
 }
 
 // --- UTILIDAD PARA PROCESAR EL GLOSARIO ---
-const renderTextWithGlossary = (text: string, glossary?: GlossaryTerm[]) => {
-  if (!glossary || glossary.length === 0) return text;
+const createGlossaryHelpers = (glossary?: GlossaryTerm[]) => {
+  // Función auxiliar para encontrar si un texto es un término del glosario
+  const findGlossaryTerm = (text: string) => {
+    if (!glossary) return null;
+    return glossary.find(
+      (g) => g.term.toLowerCase() === text.toLowerCase().trim()
+    );
+  };
 
-  // Ordenamos términos por longitud (descendente) para evitar conflictos parciales
-  const sortedGlossary = [...glossary].sort((a, b) => b.term.length - a.term.length);
-  
-  // Creamos Regex para encontrar los términos exactos
-  const regexPattern = new RegExp(`(${sortedGlossary.map(g => g.term).join('|')})`, 'gi');
-  const parts = text.split(regexPattern);
+  // Renderizador personalizado para TEXTO NORMAL (dentro de párrafos)
+  const TextWithGlossary = ({ text }: { text: string }) => {
+    if (!glossary || glossary.length === 0) return <>{text}</>;
 
-  return parts.map((part, index) => {
-    // Verificamos si la parte actual coincide con algún término del glosario
-    const glossaryItem = sortedGlossary.find(g => g.term.toLowerCase() === part.toLowerCase());
+    // Creamos una expresión regular con todos los términos
+    const regex = new RegExp(`(${glossary.map(g => g.term).join('|')})`, 'gi');
+    const parts = text.split(regex);
 
-    if (glossaryItem) {
-      return (
-        <GlossaryWord 
-          key={index} 
-          term={part} // Mantenemos mayúsculas/minúsculas originales del texto
-          definition={glossaryItem.definition} 
-        />
-      );
-    }
-    return part;
-  });
+    return (
+      <>
+        {parts.map((part, i) => {
+          const term = findGlossaryTerm(part);
+          if (term) {
+            return <GlossaryWord key={i} term={term.term} definition={term.definition} />;
+          }
+          return part;
+        })}
+      </>
+    );
+  };
+
+  return { findGlossaryTerm, TextWithGlossary };
 };
 
 // --- UTILIDAD PARA ELIMINAR HEADINGS MARKDOWN ---
@@ -182,25 +188,42 @@ const removeMarkdownHeadings = (markdown: string): string => {
 };
 
 // --- COMPONENTE RENDERER PERSONALIZADO PARA REACTMARKDOWN ---
-const createMarkdownComponents = (glossary?: GlossaryTerm[]) => ({
-  p: ({ children }: any) => (
-    <p>
-      {Array.isArray(children) 
-        ? children.map((child: any, idx: number) => {
-            // Si el hijo es un string, aplicamos el resaltado del glosario
-            if (typeof child === 'string') {
-              return <>{renderTextWithGlossary(child, glossary)}</>;
-            }
-            // Si es un elemento React (ej: <strong>, <em>, etc.), lo pasamos tal cual
-            return child;
-          })
-        : typeof children === 'string'
-          ? renderTextWithGlossary(children, glossary)
-          : children
+const createMarkdownComponents = (glossary?: GlossaryTerm[]) => {
+  const { findGlossaryTerm, TextWithGlossary } = createGlossaryHelpers(glossary);
+
+  return {
+    // A) INTERCEPTOR DE NEGRITAS - Si es un término del glosario, renderiza GlossaryWord
+    strong: ({ children }: any) => {
+      const text = String(children);
+      const term = findGlossaryTerm(text);
+      
+      if (term) {
+        return <GlossaryWord term={term.term} definition={term.definition} />;
       }
-    </p>
-  ),
-});
+      return <strong>{children}</strong>;
+    },
+
+    // B) INTERCEPTOR DE PÁRRAFOS - Procesa texto plano con lógica del glosario
+    p: ({ children }: any) => {
+      return (
+        <p>
+          {Array.isArray(children)
+            ? children.map((child: any, idx: number) => {
+                // Si es texto plano, buscamos términos del glosario
+                if (typeof child === 'string') {
+                  return <TextWithGlossary key={idx} text={child} />;
+                }
+                // Si es un elemento React (ej: <strong>, <em>, etc.), lo dejamos pasar
+                return child;
+              })
+            : typeof children === 'string'
+              ? <TextWithGlossary text={children} />
+              : children}
+        </p>
+      );
+    },
+  };
+};
 
 // --- COMPONENTE PRINCIPAL ---
 export default function DailyCard({ event }: { event: HistoryEvent }) {
@@ -315,7 +338,7 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
               <Lightbulb size={18} /> ¿Sabías que...?
             </span>
             {/* Renderizado con glosario en Fun Fact */}
-            {renderTextWithGlossary(event.funFact, event.glossary)}
+            {createGlossaryHelpers(event.glossary).TextWithGlossary({ text: event.funFact })}
           </div>
           
           {/* APLICADO: Clase dinámica para el tamaño de fuente */}
