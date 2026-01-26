@@ -189,7 +189,7 @@ const createMarkdownComponents = (glossary?: GlossaryTerm[]) => ({
         ? children.map((child: any, idx: number) => {
             // Si el hijo es un string, aplicamos el resaltado del glosario
             if (typeof child === 'string') {
-              return <React.Fragment key={idx}>{renderTextWithGlossary(child, glossary)}</React.Fragment>;
+              return <>{renderTextWithGlossary(child, glossary)}</>;
             }
             // Si es un elemento React (ej: <strong>, <em>, etc.), lo pasamos tal cual
             return child;
