@@ -221,6 +221,7 @@ def review_and_fix_content(event_data):
     TAREAS:
     1. Mejora el estilo narrativo de 'story' y 'funFact'.
     2. NO elimines ni cambies los campos 'year' ni 'date'.
+    3. IMPORTANTE: Elimina cualquier título de markdown (líneas que comiencen con # ## ### etc) del campo 'story'. El título ya se mostrará en la web, no debe estar dentro del contenido.
     (El término de búsqueda de imagen lo gestiona otra función, no lo modifiques aquí.)
     
     Devuelve el JSON válido completo.

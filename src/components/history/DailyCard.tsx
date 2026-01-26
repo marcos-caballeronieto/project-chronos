@@ -171,6 +171,37 @@ const renderTextWithGlossary = (text: string, glossary?: GlossaryTerm[]) => {
   });
 };
 
+// --- UTILIDAD PARA ELIMINAR HEADINGS MARKDOWN ---
+const removeMarkdownHeadings = (markdown: string): string => {
+  // Elimina líneas que sean h1, h2, h3, h4, h5, h6 (^#+\s)
+  return markdown
+    .split('\n')
+    .filter(line => !/^#{1,6}\s+/.test(line))
+    .join('\n')
+    .trim();
+};
+
+// --- COMPONENTE RENDERER PERSONALIZADO PARA REACTMARKDOWN ---
+const createMarkdownComponents = (glossary?: GlossaryTerm[]) => ({
+  p: ({ children }: any) => (
+    <p>
+      {Array.isArray(children) 
+        ? children.map((child: any, idx: number) => {
+            // Si el hijo es un string, aplicamos el resaltado del glosario
+            if (typeof child === 'string') {
+              return <React.Fragment key={idx}>{renderTextWithGlossary(child, glossary)}</React.Fragment>;
+            }
+            // Si es un elemento React (ej: <strong>, <em>, etc.), lo pasamos tal cual
+            return child;
+          })
+        : typeof children === 'string'
+          ? renderTextWithGlossary(children, glossary)
+          : children
+      }
+    </p>
+  ),
+});
+
 // --- COMPONENTE PRINCIPAL ---
 export default function DailyCard({ event }: { event: HistoryEvent }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -294,8 +325,8 @@ export default function DailyCard({ event }: { event: HistoryEvent }) {
             prose-strong:text-amber-600 dark:prose-strong:text-amber-500 prose-strong:font-bold
             prose-a:text-amber-600 hover:prose-a:text-amber-700 transition-all
             transition-all duration-300`}>
-            <ReactMarkdown>
-              {event.story}
+            <ReactMarkdown components={createMarkdownComponents(event.glossary)}>
+              {removeMarkdownHeadings(event.story)}
             </ReactMarkdown>
           </article>
           
